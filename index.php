@@ -134,7 +134,14 @@ $cepExibicao = strlen($cep) > 5 ? substr($cep, 0, 5) . '-' . substr($cep, 5, 3) 
 
         <?php if ($resultado): ?>
             <div class="resultado" role="status">
-                <h2>Resultado da Consulta</h2>
+                <div class="resultado-header">
+                    <h2>Resultado da Consulta</h2>
+                    <button type="button" id="btn-copiar" aria-label="Copiar endereço para a área de transferência" title="Copiar endereço">
+                        <svg class="icone-clipe" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                        </svg>
+                    </button>
+                </div>
                 <div class="dados-endereco">
                     <div class="item-endereco">
                         <strong>CEP</strong>
@@ -212,6 +219,38 @@ $cepExibicao = strlen($cep) > 5 ? substr($cep, 0, 5) . '-' . substr($cep, 5, 3) 
         });
 
         atualizarBotaoTema();
+
+        // ============================================
+        // COPIAR ENDEREÇO PARA A ÁREA DE TRANSFERÊNCIA
+        // ============================================
+        const btnCopiar = document.getElementById('btn-copiar');
+
+        if (btnCopiar) {
+            btnCopiar.addEventListener('click', async function () {
+                const linhas = [];
+                document.querySelectorAll('.resultado .item-endereco').forEach(function (item) {
+                    const label = item.querySelector('strong');
+                    const valor = item.querySelector('span');
+                    if (label && valor) {
+                        linhas.push(label.textContent + ': ' + valor.textContent);
+                    }
+                });
+
+                const texto = linhas.join('\n');
+
+                try {
+                    await navigator.clipboard.writeText(texto);
+                    btnCopiar.classList.add('copiado');
+                    btnCopiar.setAttribute('title', 'Copiado!');
+                    setTimeout(function () {
+                        btnCopiar.classList.remove('copiado');
+                        btnCopiar.setAttribute('title', 'Copiar endereço');
+                    }, 2000);
+                } catch (err) {
+                    console.error('Não foi possível copiar o endereço:', err);
+                }
+            });
+        }
     </script>
 </body>
 </html>
