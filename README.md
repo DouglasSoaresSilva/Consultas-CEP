@@ -189,14 +189,12 @@ Este projeto aborda:
 - [ ] Integração com mapa (Google Maps/OpenStreetMap)
 - [ ] Busca por logradouro (inverso: endereço → CEP)
 - [ ] PWA (Progressive Web App) para uso offline
-- [ ] Animações de transição entre telas
 - [ ] Suporte a múltiplos idiomas
 
 ### Possíveis Melhorias
 - Cache local de consultas recentes
 - Paginação ou lista de CEPs favoritos
 - Exportar resultado para PDF/texto
-- Validação em tempo real antes de enviar o formulário
 
 ---
 
@@ -208,7 +206,7 @@ https://github.com/user-attachments/assets/465a93ee-33b4-4ffb-a45d-283a5c1cc4fc
 
 ## 👨‍💻 Autor
 
-**Seu Nome**  
+**Douglas Soares**  
 Estudante de Desenvolvimento de Sistemas
 
 ---
