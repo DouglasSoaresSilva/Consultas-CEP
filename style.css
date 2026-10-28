@@ -272,6 +272,76 @@ button#toggle-tema:active {
   box-shadow: none;
 }
 
+/* Esconde formulário que não está ativo */
+.form-consulta:not(.ativo) {
+  display: none;
+}
+
+/* ===== TABS: TIPO DE BUSCA ===== */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--cor-borda);
+  padding-bottom: 16px;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--cor-texto-mais-suave);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: var(--transicao);
+  border-radius: 0;
+  font-family: inherit;
+}
+
+.tab-btn:hover {
+  color: var(--cor-texto);
+  background-color: var(--cor-primaria-suave);
+}
+
+.tab-btn.ativo {
+  color: var(--cor-primaria);
+  border-bottom-color: var(--cor-primaria);
+  background-color: var(--cor-primaria-suave);
+}
+
+body.escuro .tab-btn.ativo {
+  background-color: var(--cor-primaria-suave);
+}
+
+/* ===== SELECT E INPUTS DO FORMULÁRIO ENDEREÇO ===== */
+.form-consulta select {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 1.125rem;
+  font-weight: 500;
+  border: 2px solid var(--cor-borda);
+  border-radius: var(--raio-input);
+  outline: none;
+  background-color: var(--cor-cartao);
+  color: var(--cor-texto);
+  font-family: inherit;
+  transition: border-color var(--transicao), box-shadow var(--transicao);
+  appearance: none;
+  cursor: pointer;
+}
+
+.form-consulta select:focus {
+  border-color: var(--cor-borda-foco);
+  box-shadow: var(--sombra-glow);
+}
+
+.form-consulta select option {
+  background: var(--cor-cartao);
+  color: var(--cor-texto);
+}
+
 /* ===== ALERTAS ===== */
 .alerta {
   padding: 14px 18px;

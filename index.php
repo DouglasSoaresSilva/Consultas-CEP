@@ -21,42 +21,95 @@ function campo(array $dados, string $chave): string
 }
 
 // Verifica se o formulário foi enviado via POST
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['cep'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // Sanitiza: remove máscara e caracteres não numéricos
-    $cep = preg_replace('/\D/', '', $_POST['cep']);
+    // Identifica o tipo de busca: 'cep' (padrão) ou 'endereco'
+    $buscaTipo = $_POST['busca_tipo'] ?? 'cep';
 
-    // Valida se o CEP possui exatamente 8 dígitos numéricos
-    if (strlen($cep) !== 8 || !ctype_digit($cep)) {
-        $erro = 'Informe um CEP válido com 8 dígitos numéricos.';
-    } else {
-        // Monta a URL da API pública ViaCEP
-        $url = "https://viacep.com.br/ws/{$cep}/json/";
+    if ($buscaTipo === 'cep' && !empty($_POST['cep'])) {
 
-        // Timeout de 5s evita que a página fique travada se a API demorar
-        $contexto = stream_context_create([
-            'http' => [
-                'method'        => 'GET',
-                'timeout'       => 5,
-                'ignore_errors' => true,
-                'header'        => "Accept: application/json\r\n",
-            ],
-        ]);
+        // Sanitiza: remove máscara e caracteres não numéricos
+        $cep = preg_replace('/\D/', '', $_POST['cep']);
 
-        // Realiza a requisição HTTP GET para a API
-        $conteudo = @file_get_contents($url, false, $contexto);
-        $dados = $conteudo !== false ? json_decode($conteudo, true) : null;
-
-        if ($conteudo === false) {
-            $erro = 'Não foi possível conectar à API ViaCEP. Tente novamente mais tarde.';
-        } elseif (!is_array($dados)) {
-            // JSON inválido ou resposta que não é da API (ex.: página de erro)
-            $erro = 'A API ViaCEP retornou uma resposta inesperada. Tente novamente.';
-        } elseif (isset($dados['erro'])) {
-            // A API sinaliza CEP inexistente com {"erro": true}
-            $erro = 'CEP não encontrado.';
+        // Valida se o CEP possui exatamente 8 dígitos numéricos
+        if (strlen($cep) !== 8 || !ctype_digit($cep)) {
+            $erro = 'Informe um CEP válido com 8 dígitos numéricos.';
         } else {
-            $resultado = $dados;
+            // Monta a URL da API pública ViaCEP
+            $url = "https://viacep.com.br/ws/{$cep}/json/";
+
+            // Timeout de 5s evita que a página fique travada se a API demorar
+            $contexto = stream_context_create([
+                'http' => [
+                    'method'        => 'GET',
+                    'timeout'       => 5,
+                    'ignore_errors' => true,
+                    'header'        => "Accept: application/json\r\n" .
+                                       "User-Agent: Consulta-de-CEP/1.0\r\n",
+                ],
+            ]);
+
+            // Realiza a requisição HTTP GET para a API
+            $conteudo = @file_get_contents($url, false, $contexto);
+            $dados = $conteudo !== false ? json_decode($conteudo, true) : null;
+
+            if ($conteudo === false) {
+                $erro = 'Não foi possível conectar à API ViaCEP. Tente novamente mais tarde.';
+            } elseif (!is_array($dados)) {
+                // JSON inválido ou resposta que não é da API (ex.: página de erro)
+                $erro = 'A API ViaCEP retornou uma resposta inesperada. Tente novamente.';
+            } elseif (isset($dados['erro'])) {
+                // A API sinaliza CEP inexistente com {"erro": true}
+                $erro = 'CEP não encontrado.';
+            } else {
+                $resultado = $dados;
+            }
+        }
+
+    } elseif ($buscaTipo === 'endereco') {
+
+        // Sanitiza os parâmetros da busca por endereço
+        $uf = trim(strtoupper((string) ($_POST['uf'] ?? '')));
+        $cidade = trim((string) ($_POST['cidade'] ?? ''));
+        $logradouro = trim((string) ($_POST['logradouro'] ?? ''));
+
+        if ($uf === '' || $cidade === '' || $logradouro === '') {
+            $erro = 'Informe UF, cidade e logradouro para buscar pelo endereço.';
+        } else {
+            // Monta a URL da API pública ViaCEP para busca por endereço
+            $url = "https://viacep.com.br/ws/{$uf}/" . urlencode($cidade) . "/" . urlencode($logradouro) . "/json/";
+
+            // Timeout de 5s evita que a página fique travada se a API demorar
+            $contexto = stream_context_create([
+                'http' => [
+                    'method'        => 'GET',
+                    'timeout'       => 5,
+                    'ignore_errors' => true,
+                    'header'        => "Accept: application/json\r\n" .
+                                       "User-Agent: Consulta-de-CEP/1.0\r\n",
+                ],
+            ]);
+
+            // Realiza a requisição HTTP GET para a API
+            $conteudo = @file_get_contents($url, false, $contexto);
+            $dados = $conteudo !== false ? json_decode($conteudo, true) : null;
+
+            if ($conteudo === false) {
+                $erro = 'Não foi possível conectar à API ViaCEP. Tente novamente mais tarde.';
+            } elseif (!is_array($dados)) {
+                // JSON inválido ou resposta que não é da API (ex.: página de erro HTML 404)
+                if ($buscaTipo === 'endereco') {
+                    $erro = 'Nenhum endereço encontrado para os parâmetros informados.';
+                } else {
+                    $erro = 'A API ViaCEP retornou uma resposta inesperada. Tente novamente.';
+                }
+            } elseif (empty($dados)) {
+                // Busca por endereço retorna array vazio quando não há resultados
+                $erro = 'Nenhum endereço encontrado para os parâmetros informados.';
+            } else {
+                // Retorna apenas o primeiro resultado (conforme decisão do projeto)
+                $resultado = $dados[0];
+            }
         }
     }
 }
@@ -108,7 +161,13 @@ $cepExibicao = strlen($cep) > 5 ? substr($cep, 0, 5) . '-' . substr($cep, 5, 3) 
     </header>
 
     <main class="container">
-        <form method="POST" action="" class="form-consulta" id="form-cep">
+        <div class="tabs" role="tablist" aria-label="Tipo de busca">
+            <button type="button" class="tab-btn ativo" data-tab="cep" role="tab" aria-selected="true">Buscar por CEP</button>
+            <button type="button" class="tab-btn" data-tab="endereco" role="tab" aria-selected="false">Buscar por Endereço</button>
+        </div>
+
+        <form method="POST" action="" class="form-consulta form-cep ativo" id="form-cep">
+            <input type="hidden" name="busca_tipo" value="cep">
             <label for="cep">
                 <span>CEP:</span>
             </label>
@@ -126,6 +185,64 @@ $cepExibicao = strlen($cep) > 5 ? substr($cep, 0, 5) . '-' . substr($cep, 5, 3) 
                 required
             >
             <button type="submit" id="btn-consultar" data-texto="CONSULTAR">CONSULTAR</button>
+        </form>
+
+        <form method="POST" action="" class="form-consulta form-endereco" id="form-endereco">
+            <input type="hidden" name="busca_tipo" value="endereco">
+            <label for="uf">
+                <span>UF:</span>
+            </label>
+            <select id="uf" name="uf" required>
+                <option value="">Selecione o estado</option>
+                <option value="AC">Acre (AC)</option>
+                <option value="AL">Alagoas (AL)</option>
+                <option value="AP">Amapá (AP)</option>
+                <option value="AM">Amazonas (AM)</option>
+                <option value="BA">Bahia (BA)</option>
+                <option value="CE">Ceará (CE)</option>
+                <option value="DF">Distrito Federal (DF)</option>
+                <option value="ES">Espírito Santo (ES)</option>
+                <option value="GO">Goiás (GO)</option>
+                <option value="MA">Maranhão (MA)</option>
+                <option value="MT">Mato Grosso (MT)</option>
+                <option value="MS">Mato Grosso do Sul (MS)</option>
+                <option value="MG">Minas Gerais (MG)</option>
+                <option value="PA">Pará (PA)</option>
+                <option value="PB">Paraíba (PB)</option>
+                <option value="PR">Paraná (PR)</option>
+                <option value="PE">Pernambuco (PE)</option>
+                <option value="PI">Piauí (PI)</option>
+                <option value="RJ">Rio de Janeiro (RJ)</option>
+                <option value="RN">Rio Grande do Norte (RN)</option>
+                <option value="RS">Rio Grande do Sul (RS)</option>
+                <option value="RO">Rondônia (RO)</option>
+                <option value="RR">Roraima (RR)</option>
+                <option value="SC">Santa Catarina (SC)</option>
+                <option value="SP">São Paulo (SP)</option>
+                <option value="SE">Sergipe (SE)</option>
+                <option value="TO">Tocantins (TO)</option>
+            </select>
+            <label for="cidade">
+                <span>Cidade:</span>
+            </label>
+            <input
+                type="text"
+                id="cidade"
+                name="cidade"
+                placeholder="São Paulo"
+                required
+            >
+            <label for="logradouro">
+                <span>Logradouro:</span>
+            </label>
+            <input
+                type="text"
+                id="logradouro"
+                name="logradouro"
+                placeholder="Avenida Paulista"
+                required
+            >
+            <button type="submit" id="btn-consultar-endereco" data-texto="CONSULTAR">CONSULTAR</button>
         </form>
 
         <?php if ($erro): ?>
@@ -181,14 +298,23 @@ $cepExibicao = strlen($cep) > 5 ? substr($cep, 0, 5) . '-' . substr($cep, 5, 3) 
         // ============================================
         // CONTROLE DO BOTÃO E ESTADO DE CARREGAMENTO
         // ============================================
-        const form = document.getElementById('form-cep');
+        const formCep = document.getElementById('form-cep');
         const btnConsultar = document.getElementById('btn-consultar');
+        const formEndereco = document.getElementById('form-endereco');
+        const btnConsultarEndereco = document.getElementById('btn-consultar-endereco');
 
-        form.addEventListener('submit', function () {
+        formCep.addEventListener('submit', function () {
             // Desabilita o botão para evitar cliques múltiplos e mostra o spinner
             btnConsultar.disabled = true;
             btnConsultar.classList.add('carregando');
             btnConsultar.textContent = 'CONSULTANDO...';
+        });
+
+        formEndereco.addEventListener('submit', function () {
+            // Desabilita o botão para evitar cliques múltiplos e mostra o spinner
+            btnConsultarEndereco.disabled = true;
+            btnConsultarEndereco.classList.add('carregando');
+            btnConsultarEndereco.textContent = 'CONSULTANDO...';
         });
 
         // Ao voltar pelo botão "voltar" do navegador, a página pode vir do cache
@@ -197,7 +323,43 @@ $cepExibicao = strlen($cep) > 5 ? substr($cep, 0, 5) . '-' . substr($cep, 5, 3) 
             btnConsultar.disabled = false;
             btnConsultar.classList.remove('carregando');
             btnConsultar.textContent = btnConsultar.dataset.texto;
+
+            btnConsultarEndereco.disabled = false;
+            btnConsultarEndereco.classList.remove('carregando');
+            btnConsultarEndereco.textContent = btnConsultarEndereco.dataset.texto;
         });
+
+        // ============================================
+        // TABS: BUSCAR POR CEP | BUSCAR POR ENDEREÇO
+        // ============================================
+        const tabBtns = document.querySelectorAll('.tab-btn');
+
+        tabBtns.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const tab = btn.dataset.tab;
+
+                // Atualiza estado dos botões de tab
+                tabBtns.forEach(function (b) {
+                    const ativo = b.dataset.tab === tab;
+                    b.classList.toggle('ativo', ativo);
+                    b.setAttribute('aria-selected', String(ativo));
+                });
+
+                // Mostra/esconde os formulários correspondentes
+                formCep.classList.toggle('ativo', tab === 'cep');
+                formEndereco.classList.toggle('ativo', tab === 'endereco');
+            });
+        });
+
+        // ============================================
+        // MÁSCARA DE UF (maiúsculas automáticas)
+        // ============================================
+        const campoUf = document.getElementById('uf');
+        if (campoUf) {
+            campoUf.addEventListener('input', function (e) {
+                e.target.value = e.target.value.toUpperCase();
+            });
+        }
 
         // ============================================
         // ALTERNÂNCIA DE TEMA (claro / escuro)
