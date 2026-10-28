@@ -4,7 +4,7 @@
 
 ## 📋 Descrição
 
-O **Consulta de CEP** é uma aplicação web simples e direta que permite buscar endereços pelo CEP utilizando a API pública do ViaCEP. O usuário digita o CEP no formulário, o sistema consulta a API e exibe os dados do endereço de forma limpa e organizada.
+O **Consulta de CEP** é uma aplicação web simples e direta que permite buscar endereços pelo CEP ou por logradouro utilizando a API pública do ViaCEP. O usuário digita o CEP ou informa UF, cidade e logradouro, o sistema consulta a API e exibe os dados do endereço de forma limpa e organizada.
 
 **Disciplina:** Programação Web 2 (PWII)  
 ---
@@ -16,12 +16,18 @@ O **Consulta de CEP** é uma aplicação web simples e direta que permite buscar
 - Exibe logradouro, bairro, cidade/UF e CEP
 - Integração com a API pública ViaCEP
 
+✅ **Busca por Endereço**
+- Busca CEP por UF, cidade e logradouro
+- Select dropdown com todos os estados brasileiros + Distrito Federal
+- Tabs para alternar entre os tipos de busca
+
 ✅ **Interface Intuitiva**
 - Design responsivo (mobile-first)
 - Máscara automática de CEP (00000-000) enquanto digita
 - Feedback visual de erro (CEP inválido ou não encontrado)
 - Mensagem de sucesso com dados do endereço
 - Botão de consulta com estado de carregamento
+- Botão para copiar endereço para a área de transferência (ícone de clipe)
 
 ✅ **Tema Claro/Escuro**
 - Alternância manual entre temas
@@ -110,6 +116,8 @@ php -S localhost:8000
 ### 3️⃣ Testar as Funcionalidades
 
 - 🔍 **Consultar CEP:** Digite um CEP válido (ex: `01001-000`) e clique em "CONSULTAR"
+- 🏠 **Consultar por Endereço:** Clique na aba "Buscar por Endereço", selecione a UF, informe cidade e logradouro, e clique em "CONSULTAR"
+- 📋 **Copiar Endereço:** Após uma consulta, clique no ícone de clipe para copiar o endereço para a área de transferência
 - ✅ **Sucesso:** Os dados do endereço serão exibidos abaixo do formulário
 - ❌ **Erro:** CEP inválido ou não encontrado exibe uma mensagem de alerta
 - 🌙 **Tema:** Clique no botão de lua/sol no canto superior direito para alternar temas
@@ -183,9 +191,7 @@ Este projeto aborda:
 
 ### Não Implementado
 - [ ] Histórico de CEPs consultados (localStorage)
-- [ ] Botão "Copiar endereço"
 - [ ] Integração com mapa (Google Maps/OpenStreetMap)
-- [ ] Busca por logradouro (inverso: endereço → CEP)
 - [ ] PWA (Progressive Web App) para uso offline
 - [ ] Suporte a múltiplos idiomas
 
@@ -226,4 +232,4 @@ Este projeto é de uso educacional. Sinta-se livre para estudar, modificar e dis
 ---
 
 **Última atualização:** 28 de Outubro de 2026  
-**Status:** ✅ Funcional (versão 1.0)
+**Status:** ✅ Funcional (versão 1.1)
