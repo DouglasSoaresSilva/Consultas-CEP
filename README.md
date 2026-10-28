@@ -6,9 +6,7 @@
 
 O **Consulta de CEP** é uma aplicação web simples e direta que permite buscar endereços pelo CEP utilizando a API pública do ViaCEP. O usuário digita o CEP no formulário, o sistema consulta a API e exibe os dados do endereço de forma limpa e organizada.
 
-**Disciplina:** Programação Web (PW)  
-**Repositório:** [consultas-cep](https://github.com/seu-usuario/consultas-cep)
-
+**Disciplina:** Programação Web 2 (PWII)  
 ---
 
 ## 🎯 Funcionalidades
