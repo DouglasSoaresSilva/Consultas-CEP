@@ -77,9 +77,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $erro = 'Informe UF, cidade e logradouro para buscar pelo endereço.';
         } else {
             // Monta a URL da API pública ViaCEP para busca por endereço
-            $url = "https://viacep.com.br/ws/{$uf}/" . urlencode($cidade) . "/" . urlencode($logradouro) . "/json/";
+            // rawurlencode codifica espaços como %20 (mais adequado para caminhos de URL)
+            $url = "https://viacep.com.br/ws/{$uf}/" . rawurlencode($cidade) . "/" . rawurlencode($logradouro) . "/json/";
 
-            // Timeout de 5s evita que a página fique travada se a API demorar
+            // Mesmo contexto usado na busca por CEP (funciona no ambiente local)
             $contexto = stream_context_create([
                 'http' => [
                     'method'        => 'GET',
