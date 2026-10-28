@@ -202,7 +202,7 @@ Este projeto aborda:
 
 ## 🎥 Vídeo
 
-*Em breve: demonstração da aplicação em funcionamento.*
+https://github.com/user-attachments/assets/465a93ee-33b4-4ffb-a45d-283a5c1cc4fc
 
 ---
 
