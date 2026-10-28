@@ -73,6 +73,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   padding: 24px;
   transition: background-color var(--transicao), color var(--transicao);
 }
@@ -465,6 +466,58 @@ body.escuro button#toggle-tema .icone-sol {
 
 body.escuro button#toggle-tema .icone-lua {
   display: none;
+}
+
+/* ===== CABEÇALHO DO RESULTADO (título + botão copiar) ===== */
+.resultado-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.resultado-header h2 {
+  margin: 0;
+}
+
+button#btn-copiar {
+  background: var(--cor-cartao);
+  border: 1px solid var(--cor-borda);
+  color: var(--cor-texto);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transicao);
+  box-shadow: var(--sombra-suave);
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+button#btn-copiar:hover {
+  border-color: var(--cor-borda-foco);
+  background-color: var(--cor-primaria-suave);
+  transform: translateY(-2px);
+}
+
+button#btn-copiar:active {
+  transform: translateY(0);
+}
+
+button#btn-copiar.copiado {
+  color: var(--cor-sucesso);
+  border-color: var(--cor-sucesso);
+  background-color: var(--cor-sucesso-suave);
+}
+
+button#btn-copiar:focus-visible {
+  outline: 3px solid var(--cor-borda-foco);
+  outline-offset: 3px;
 }
 
 /* ===== FOCO VISÍVEL PARA TECLADO ===== */
