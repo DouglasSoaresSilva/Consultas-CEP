@@ -2,9 +2,24 @@
 // Consulta de CEP via API pública (ViaCEP)
 // Processa o formulário e exibe os resultados dinamicamente
 
+session_start();
+
 $resultado = null;
 $erro = null;
 $cep = '';
+
+// Se houver dados salvos na sessão (vindo de redirect após POST), recupera
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && !empty($_SESSION['busca_tipo'])) {
+    $buscaTipo = $_SESSION['busca_tipo'];
+    $resultado = $_SESSION['resultado'] ?? null;
+    $erro = $_SESSION['erro'] ?? null;
+    $cep = $_SESSION['cep'] ?? '';
+    // Limpa a sessão após recuperar para não persistir além de uma página
+    $_SESSION['busca_tipo'] = null;
+    $_SESSION['resultado'] = null;
+    $_SESSION['erro'] = null;
+    $_SESSION['cep'] = null;
+}
 
 // Escapa texto para exibição segura em HTML
 function e(string $texto): string
@@ -113,6 +128,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+
+    // Salva o estado na sessão e redireciona (Post/Redirect/Get)
+    // Isso evita que o navegador reenvie o formulário ao atualizar (F5)
+    $_SESSION['busca_tipo'] = $buscaTipo;
+    $_SESSION['resultado'] = $resultado;
+    $_SESSION['erro'] = $erro;
+    $_SESSION['cep'] = $cep;
+    header('Location: ?busca_tipo=' . urlencode($buscaTipo));
+    exit;
 }
 
 // Reaplica a máscara ao repopular o campo depois do envio
@@ -162,12 +186,13 @@ $cepExibicao = strlen($cep) > 5 ? substr($cep, 0, 5) . '-' . substr($cep, 5, 3) 
     </header>
 
     <main class="container">
+        <?php $tabAtiva = $buscaTipo ?? 'cep'; ?>
         <div class="tabs" role="tablist" aria-label="Tipo de busca">
-            <button type="button" class="tab-btn ativo" data-tab="cep" role="tab" aria-selected="true">Buscar por CEP</button>
-            <button type="button" class="tab-btn" data-tab="endereco" role="tab" aria-selected="false">Buscar por Endereço</button>
+            <button type="button" class="tab-btn <?= $tabAtiva === 'cep' ? 'ativo' : '' ?>" data-tab="cep" role="tab" aria-selected="<?= $tabAtiva === 'cep' ? 'true' : 'false' ?>">Buscar por CEP</button>
+            <button type="button" class="tab-btn <?= $tabAtiva === 'endereco' ? 'ativo' : '' ?>" data-tab="endereco" role="tab" aria-selected="<?= $tabAtiva === 'endereco' ? 'true' : 'false' ?>">Buscar por Endereço</button>
         </div>
 
-        <form method="POST" action="" class="form-consulta form-cep ativo" id="form-cep">
+        <form method="POST" action="" class="form-consulta form-cep <?= $tabAtiva === 'cep' ? 'ativo' : '' ?>" id="form-cep">
             <input type="hidden" name="busca_tipo" value="cep">
             <label for="cep">
                 <span>CEP:</span>
@@ -188,7 +213,7 @@ $cepExibicao = strlen($cep) > 5 ? substr($cep, 0, 5) . '-' . substr($cep, 5, 3) 
             <button type="submit" id="btn-consultar" data-texto="CONSULTAR">CONSULTAR</button>
         </form>
 
-        <form method="POST" action="" class="form-consulta form-endereco" id="form-endereco">
+        <form method="POST" action="" class="form-consulta form-endereco <?= $tabAtiva === 'endereco' ? 'ativo' : '' ?>" id="form-endereco">
             <input type="hidden" name="busca_tipo" value="endereco">
             <label for="uf">
                 <span>UF:</span>
